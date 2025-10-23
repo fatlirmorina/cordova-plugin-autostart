@@ -46,65 +46,115 @@ public class AppStarter {
         // Log.d("Cordova AppStarter", "Package: " + packageName + ", Activity: " + activityClassName);
         
         if( !activityClassName.equals("") ){
-            try {
-                Intent activityIntent = new Intent();
-                activityIntent.setClassName(
-                    context, String.format("%s.%s", packageName, activityClassName));
-                activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                activityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            // For Fire OS, try multiple launch strategies
+            if (isFireOS) {
+                boolean launched = false;
                 
-                // Fire OS specific handling
-                if (isFireOS) {
-                    // For Fire TV, add specific flags for better autostart behavior
-                    if (isFireTV) {
-                        // Fire TV specific flags
-                        activityIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-                        activityIntent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                        activityIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                // Strategy 1: Try package manager launch intent first (most reliable for Fire OS)
+                try {
+                    // Log.d("Cordova AppStarter", "Fire OS: Trying package manager launch intent");
+                    Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
+                    if (launchIntent != null) {
+                        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        launchIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         
-                        // Additional Fire TV specific intent setup
-                        activityIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-                        activityIntent.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
+                        if (isFireTV) {
+                            launchIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                            launchIntent.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
+                        }
+                        
+                        if (onAutostart) {
+                            launchIntent.putExtra(CORDOVA_AUTOSTART, true);
+                        }
+                        launchIntent.putExtra("FIRE_OS_AUTOSTART", true);
+                        launchIntent.putExtra("FIRE_OS_LAUNCH_METHOD", "package_manager");
+                        launchIntent.putExtra("FIRE_OS_DEVICE_MODEL", android.os.Build.MODEL);
+                        
+                        context.startActivity(launchIntent);
+                        launched = true;
+                        // Log.d("Cordova AppStarter", "Fire OS: Package manager launch successful");
+                    }
+                } catch (Exception e) {
+                    // Log.e("Cordova AppStarter", "Fire OS: Package manager launch failed", e);
+                }
+                
+                // Strategy 2: Try explicit activity name (fallback)
+                if (!launched) {
+                    try {
+                        // Log.d("Cordova AppStarter", "Fire OS: Trying explicit activity launch");
+                        Intent activityIntent = new Intent();
+                        activityIntent.setClassName(context, String.format("%s.%s", packageName, activityClassName));
+                        activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        activityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        
+                        if (isFireTV) {
+                            activityIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                            activityIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+                            activityIntent.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
+                        }
+                        
+                        if (onAutostart) {
+                            activityIntent.putExtra(CORDOVA_AUTOSTART, true);
+                        }
+                        activityIntent.putExtra("FIRE_OS_AUTOSTART", true);
+                        activityIntent.putExtra("FIRE_OS_LAUNCH_METHOD", "explicit_activity");
+                        activityIntent.putExtra("FIRE_OS_DEVICE_MODEL", android.os.Build.MODEL);
+                        
+                        context.startActivity(activityIntent);
+                        launched = true;
+                        // Log.d("Cordova AppStarter", "Fire OS: Explicit activity launch successful");
+                        
+                    } catch (Exception e) {
+                        // Log.e("Cordova AppStarter", "Fire OS: Explicit activity launch failed", e);
+                    }
+                }
+                
+                // Strategy 3: Try with ACTION_MAIN intent (last resort)
+                if (!launched) {
+                    try {
+                        // Log.d("Cordova AppStarter", "Fire OS: Trying ACTION_MAIN intent");
+                        Intent mainIntent = new Intent(Intent.ACTION_MAIN);
+                        mainIntent.setClassName(context, String.format("%s.%s", packageName, activityClassName));
+                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+                        
+                        if (isFireTV) {
+                            mainIntent.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
+                        }
+                        
+                        if (onAutostart) {
+                            mainIntent.putExtra(CORDOVA_AUTOSTART, true);
+                        }
+                        mainIntent.putExtra("FIRE_OS_AUTOSTART", true);
+                        mainIntent.putExtra("FIRE_OS_LAUNCH_METHOD", "action_main");
+                        mainIntent.putExtra("FIRE_OS_DEVICE_MODEL", android.os.Build.MODEL);
+                        
+                        context.startActivity(mainIntent);
+                        // Log.d("Cordova AppStarter", "Fire OS: ACTION_MAIN launch successful");
+                        
+                    } catch (Exception e) {
+                        // Log.e("Cordova AppStarter", "Fire OS: All launch strategies failed", e);
+                    }
+                }
+                
+            } else {
+                // Standard Android launch
+                try {
+                    Intent activityIntent = new Intent();
+                    activityIntent.setClassName(context, String.format("%s.%s", packageName, activityClassName));
+                    activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    activityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    
+                    if (onAutostart) {
+                        activityIntent.putExtra(CORDOVA_AUTOSTART, true);
                     }
                     
-                    // Add Fire OS identifier to intent
-                    activityIntent.putExtra("FIRE_OS_AUTOSTART", true);
-                    activityIntent.putExtra("FIRE_OS_DEVICE_TYPE", FireOSDetector.getFireOSDeviceType(context));
-                    activityIntent.putExtra("FIRE_OS_DEVICE_MODEL", android.os.Build.MODEL);
-                }
-                
-                if (onAutostart) {
-                  activityIntent.putExtra(CORDOVA_AUTOSTART, true);
-                }
-                
-                // Log.d("Cordova AppStarter", "Starting activity with intent: " + activityIntent.toString());
-                context.startActivity(activityIntent);
-                // Log.d("Cordova AppStarter", "Activity started successfully");
-                
-            } catch (Exception e) {
-                // Log.e("Cordova AppStarter", "Failed to start activity", e);
-                
-                // Fallback: Try starting with just the package name (Fire OS sometimes needs this)
-                if (isFireOS) {
-                    try {
-                        // Log.d("Cordova AppStarter", "Trying Fire OS fallback method");
-                        Intent fallbackIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
-                        if (fallbackIntent != null) {
-                            fallbackIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            fallbackIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            
-                            if (onAutostart) {
-                                fallbackIntent.putExtra(CORDOVA_AUTOSTART, true);
-                            }
-                            fallbackIntent.putExtra("FIRE_OS_AUTOSTART", true);
-                            fallbackIntent.putExtra("FIRE_OS_FALLBACK", true);
-                            
-                            context.startActivity(fallbackIntent);
-                            // Log.d("Cordova AppStarter", "Fire OS fallback successful");
-                        }
-                    } catch (Exception fallbackException) {
-                        // Log.e("Cordova AppStarter", "Fire OS fallback also failed", fallbackException);
-                    }
+                    context.startActivity(activityIntent);
+                    // Log.d("Cordova AppStarter", "Standard Android: Activity started successfully");
+                    
+                } catch (Exception e) {
+                    // Log.e("Cordova AppStarter", "Standard Android: Failed to start activity", e);
                 }
             }
         }
