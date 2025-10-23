@@ -3,21 +3,18 @@
 [![npm](https://img.shields.io/npm/v/cordova-plugin-autostart.svg)](https://www.npmjs.com/package/cordova-plugin-autostart)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/fatlirmorina/cordova-plugin-autostart/blob/main/LICENSE)
 
-Automatically start your Cordova application after device boot or application update. This plugin provides autostart functionality for Android (including Amazon Fire OS/Fire TV) and macOS platforms.
+Automatically start your Cordova application after device boot or application update. This plugin provides autostart functionality for Android and macOS platforms.
 
 ## Features
 
 - ✅ **Android**: Auto-start app after device boot
 - ✅ **macOS**: Launch helper applications at boot
-- ✅ **Fire OS/Fire TV**: Optimized autostart for Amazon devices
 - ✅ **Service Support**: Start background services automatically
 - ✅ **Easy Control**: Enable/disable autostart functionality
-- ✅ **Device Detection**: Identify Fire OS and Fire TV devices
 
 ## Supported Platforms
 
 - **Android** (API level 14+)
-- **Amazon Fire OS / Fire TV**
 - **macOS**
 
 ## Installation
@@ -55,49 +52,6 @@ cordova.plugins.autoStart.enableService("com.yourcompany.yourapp.YourServiceClas
 cordova.plugins.autoStart.enableService("com.yourcompany.helper-app");
 ```
 
-### Fire OS Detection
-
-```javascript
-// Check if running on Amazon Fire OS
-cordova.plugins.autoStart.isFireOS(
-  function (isFireOS) {
-    if (isFireOS) {
-      console.log("Running on Amazon Fire OS");
-
-      // Check if it's specifically Fire TV
-      cordova.plugins.autoStart.isFireTV(
-        function (isFireTV) {
-          if (isFireTV) {
-            console.log("Optimized for Fire TV");
-            // Enable autostart with Fire TV optimizations
-            cordova.plugins.autoStart.enable();
-          } else {
-            console.log("Running on Fire Tablet");
-          }
-        },
-        function (error) {
-          console.error("Error checking Fire TV:", error);
-        }
-      );
-    }
-  },
-  function (error) {
-    console.error("Error checking Fire OS:", error);
-  }
-);
-
-// Get detailed device type information
-cordova.plugins.autoStart.getFireOSDeviceType(
-  function (deviceType) {
-    console.log("Device type:", deviceType);
-    // Possible values: "Fire TV", "Fire Tablet", "Not Fire OS"
-  },
-  function (error) {
-    console.error("Error getting device type:", error);
-  }
-);
-```
-
 ## API Reference
 
 ### Methods
@@ -106,7 +60,7 @@ cordova.plugins.autoStart.getFireOSDeviceType(
 
 Enables autostart for your main application.
 
-**Platforms**: Android, Fire OS
+**Platforms**: Android
 
 ```javascript
 cordova.plugins.autoStart.enable();
@@ -119,13 +73,13 @@ Enables autostart for a specific service or helper application.
 **Parameters**:
 
 - `serviceClass` (string):
-  - **Android/Fire OS**: Full class name of the service (e.g., `"com.yourcompany.yourapp.YourService"`)
+  - **Android**: Full class name of the service (e.g., `"com.yourcompany.yourapp.YourService"`)
   - **macOS**: Bundle identifier of the helper application
 
-**Platforms**: Android, Fire OS, macOS
+**Platforms**: Android, macOS
 
 ```javascript
-// Android/Fire OS
+// Android
 cordova.plugins.autoStart.enableService("com.yourcompany.yourapp.YourService");
 
 // macOS
@@ -136,88 +90,24 @@ cordova.plugins.autoStart.enableService("com.yourcompany.helper-app");
 
 Disables autostart functionality for both app and services.
 
-**Platforms**: Android, Fire OS, macOS
+**Platforms**: Android, macOS
 
 ```javascript
 cordova.plugins.autoStart.disable();
 ```
 
-#### `isFireOS(successCallback, errorCallback)`
-
-Checks if the device is running Amazon Fire OS.
-
-**Parameters**:
-
-- `successCallback` (function): Called with boolean result
-- `errorCallback` (function): Called on error
-
-**Platforms**: Android, Fire OS
-
-```javascript
-cordova.plugins.autoStart.isFireOS(
-  function (isFireOS) {
-    console.log("Is Fire OS:", isFireOS);
-  },
-  function (error) {
-    console.error("Error:", error);
-  }
-);
-```
-
-#### `isFireTV(successCallback, errorCallback)`
-
-Checks if the device is an Amazon Fire TV.
-
-**Parameters**:
-
-- `successCallback` (function): Called with boolean result
-- `errorCallback` (function): Called on error
-
-**Platforms**: Android, Fire OS
-
-```javascript
-cordova.plugins.autoStart.isFireTV(
-  function (isFireTV) {
-    console.log("Is Fire TV:", isFireTV);
-  },
-  function (error) {
-    console.error("Error:", error);
-  }
-);
-```
-
-#### `getFireOSDeviceType(successCallback, errorCallback)`
-
-Gets a description of the Fire OS device type.
-
-**Parameters**:
-
-- `successCallback` (function): Called with device type string
-- `errorCallback` (function): Called on error
-
-**Returns**: `"Fire TV"`, `"Fire Tablet"`, or `"Not Fire OS"`
-
-**Platforms**: Android, Fire OS
-
-```javascript
-cordova.plugins.autoStart.getFireOSDeviceType(
-  function (deviceType) {
-    console.log("Device type:", deviceType);
-  },
-  function (error) {
-    console.error("Error:", error);
-  }
-);
-```
-
 ## Platform-Specific Notes
 
-### Android & Fire OS
+### Android
 
 - Requires `RECEIVE_BOOT_COMPLETED` permission (automatically added)
 - App must be installed on internal storage (not SD card)
-- Some Android versions may require users to manually enable autostart in device settings
-- Fire TV devices receive optimized intent flags for better autostart behavior
+- Some Android (fireOS) versions may require users to manually enable autostart in device settings
+- For some Android (fireOS) generations, additional permissions may need to be granted manually via ADB:
+
+```bash
+adb shell pm grant com.yourapp android.permission.SYSTEM_ALERT_WINDOW
+```
 
 ### macOS
 
@@ -227,12 +117,19 @@ cordova.plugins.autoStart.getFireOSDeviceType(
 
 ## Permissions
 
-### Android & Fire OS
+### Android
 
 The plugin automatically adds the required permission:
 
 ```xml
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+```
+
+For some Android (fireOS) generations, you may need to manually grant additional permissions via ADB:
+
+```bash
+# Grant system alert window permission (if required for your app)
+adb shell pm grant com.yourapp android.permission.SYSTEM_ALERT_WINDOW
 ```
 
 ## TypeScript Support
@@ -245,14 +142,8 @@ declare var cordova: any;
 // Enable autostart
 cordova.plugins.autoStart.enable();
 
-// Check Fire OS with proper typing
-cordova.plugins.autoStart.isFireOS((isFireOS: boolean) => {
-  if (isFireOS) {
-    cordova.plugins.autoStart.getFireOSDeviceType((deviceType: string) => {
-      console.log(`Running on ${deviceType}`);
-    });
-  }
-});
+// Enable service autostart
+cordova.plugins.autoStart.enableService("com.yourcompany.yourapp.YourService");
 ```
 
 ## Troubleshooting
@@ -262,11 +153,10 @@ cordova.plugins.autoStart.isFireOS((isFireOS: boolean) => {
 - **App doesn't start after reboot**: Check if the app is installed on internal storage, not SD card
 - **Permission denied**: Ensure the app has been launched at least once manually
 - **Battery optimization**: Some devices may require disabling battery optimization for the app
-
-### Fire OS/Fire TV
-
-- **Fire TV not starting**: Ensure the Fire TV device allows unknown sources if using a custom build
-- **Detection not working**: Verify the device has the proper Fire OS system features
+- **Missing permissions**: For some Android generations, manually grant permissions via ADB:
+  ```bash
+  adb shell pm grant com.yourapp android.permission.SYSTEM_ALERT_WINDOW
+  ```
 
 ### macOS
 
