@@ -24,6 +24,7 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
@@ -77,6 +78,9 @@ public class AutoStart extends CordovaPlugin {
             Context context = cordova.getActivity().getApplicationContext();
             callback.success(FireOSDetector.getFireOSDeviceType(context));
             return true;
+        } else if ( action.equalsIgnoreCase("getAutoStartStatus") ) {
+            callback.success(getAutoStartStatus());
+            return true;
         }
         return false;
     }
@@ -112,5 +116,37 @@ public class AutoStart extends CordovaPlugin {
         ComponentName bootCompletedReceiver = new ComponentName(context, BootCompletedReceiver.class);
         PackageManager pm = context.getPackageManager();
         pm.setComponentEnabledSetting(bootCompletedReceiver, componentState, PackageManager.DONT_KILL_APP);
+    }
+    
+    private JSONObject getAutoStartStatus() throws JSONException {
+        Context context = cordova.getActivity().getApplicationContext();
+        SharedPreferences sp = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        PackageManager pm = context.getPackageManager();
+        ComponentName bootCompletedReceiver = new ComponentName(context, BootCompletedReceiver.class);
+        
+        JSONObject status = new JSONObject();
+        status.put("isFireOS", FireOSDetector.isFireOS());
+        status.put("isFireTV", FireOSDetector.isFireTV(context));
+        status.put("deviceType", FireOSDetector.getFireOSDeviceType(context));
+        status.put("deviceModel", android.os.Build.MODEL);
+        status.put("deviceManufacturer", android.os.Build.MANUFACTURER);
+        status.put("packageName", context.getPackageName());
+        
+        // Check stored preferences
+        String activityClassName = sp.getString(ACTIVITY_CLASS_NAME, "");
+        String serviceClassName = sp.getString(SERVICE_CLASS_NAME, "");
+        status.put("storedActivityClass", activityClassName);
+        status.put("storedServiceClass", serviceClassName);
+        
+        // Check receiver state
+        int receiverState = pm.getComponentEnabledSetting(bootCompletedReceiver);
+        status.put("bootReceiverEnabled", receiverState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
+        status.put("bootReceiverState", receiverState);
+        
+        // Check if autostart is configured
+        boolean hasAutoStart = !activityClassName.equals("") || !serviceClassName.equals("");
+        status.put("hasAutoStartConfigured", hasAutoStart);
+        
+        return status;
     }
 }
