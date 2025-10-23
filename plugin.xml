@@ -66,7 +66,6 @@
         <source-file src="src/android/PackageReplacedReceiver.java" target-dir="src/com/fatlirmorina/cordova/plugin/autostart" />
         <source-file src="src/android/AppStarter.java"            	target-dir="src/com/fatlirmorina/cordova/plugin/autostart" />
         <source-file src="src/android/AutoStart.java"             	target-dir="src/com/fatlirmorina/cordova/plugin/autostart" />
-        <source-file src="src/android/FireOSDetector.java"        	target-dir="src/com/fatlirmorina/cordova/plugin/autostart" />
     </platform>
 
     <!-- macOS -->

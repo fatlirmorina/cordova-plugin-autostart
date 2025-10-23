@@ -98,3 +98,23 @@ exports.isFireTV = function (successCallback, errorCallback) {
 exports.getFireOSDeviceType = function (successCallback, errorCallback) {
   cordova.exec(successCallback, errorCallback, "AutoStart", "getFireOSDeviceType", []);
 };
+
+/**
+ * Android: gets comprehensive autostart status and device information
+ *
+ * @param {Function} successCallback - called with status object
+ * @param {Function} errorCallback - called on error
+ */
+exports.getAutoStartStatus = function (successCallback, errorCallback) {
+  cordova.exec(successCallback, errorCallback, "AutoStart", "getAutoStartStatus", []);
+};
+
+/**
+ * Android: manually test the autostart functionality without rebooting
+ *
+ * @param {Function} successCallback - called on success
+ * @param {Function} errorCallback - called on error
+ */
+exports.testAutoStart = function (successCallback, errorCallback) {
+  cordova.exec(successCallback, errorCallback, "AutoStart", "testAutoStart", []);
+};

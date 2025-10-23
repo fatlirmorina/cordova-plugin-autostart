@@ -24,6 +24,7 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
@@ -65,17 +66,6 @@ public class AutoStart extends CordovaPlugin {
         } else if ( action.equalsIgnoreCase("disable") ) {
             disableAutoStart();
             callback.success();
-            return true;
-        } else if ( action.equalsIgnoreCase("isFireOS") ) {
-            callback.success(FireOSDetector.isFireOS() ? 1 : 0);
-            return true;
-        } else if ( action.equalsIgnoreCase("isFireTV") ) {
-            Context context = cordova.getActivity().getApplicationContext();
-            callback.success(FireOSDetector.isFireTV(context) ? 1 : 0);
-            return true;
-        } else if ( action.equalsIgnoreCase("getFireOSDeviceType") ) {
-            Context context = cordova.getActivity().getApplicationContext();
-            callback.success(FireOSDetector.getFireOSDeviceType(context));
             return true;
         }
         return false;
