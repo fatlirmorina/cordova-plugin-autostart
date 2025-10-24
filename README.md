@@ -19,6 +19,12 @@ Automatically start your Cordova application after device boot or application up
 
 ## Installation
 
+### Install from npm
+
+```bash
+cordova plugin add @fatlirmorina/cordova-plugin-autostart
+```
+
 ### Install from GitHub
 
 ```bash
