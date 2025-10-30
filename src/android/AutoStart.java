@@ -31,7 +31,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.ComponentName;
-import com.fatlirmorina.cordova.plugin.autostart.FireOSDetector;
 
 public class AutoStart extends CordovaPlugin {
 
