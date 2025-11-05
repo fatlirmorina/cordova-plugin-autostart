@@ -1,6 +1,6 @@
 # Cordova Autostart Plugin
 
-[![npm](https://img.shields.io/npm/v/cordova-plugin-autostart.svg)](https://www.npmjs.com/package/cordova-plugin-autostart)
+[![npm](https://img.shields.io/npm/v/cordova-plugin-autostart.svg)](https://www.npmjs.com/package/@fatlirmorina/cordova-plugin-autostart)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/fatlirmorina/cordova-plugin-autostart/blob/main/LICENSE)
 
 Automatically start your Cordova application after device boot or application update. This plugin provides autostart functionality for Android and macOS platforms.
